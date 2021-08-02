@@ -219,7 +219,7 @@
                                                                         options:nil];
     
     if (!task) {
-        return;
+        return nil;
     }
     
     [task resume];
