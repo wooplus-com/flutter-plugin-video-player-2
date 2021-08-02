@@ -175,7 +175,13 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         }
         else {
             AVAssetDownloadTask *downloadTask = [[APHLSCache instance] downloadWithURL:url];
-            item = [AVPlayerItem playerItemWithAsset:downloadTask.URLAsset];
+            if (downloadTask) {
+                item = [AVPlayerItem playerItemWithAsset:downloadTask.URLAsset];
+            }
+            else {
+                item = [AVPlayerItem playerItemWithURL:url];
+            }
+
         }
     }
     else {
@@ -485,7 +491,11 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     // 启动时清理所有未完成的下载任务
-    [[APHLSCache instance] cleanAllPendingTask];
+    dispatch_async(dispatch_queue_create("queue.APHLSCache", DISPATCH_QUEUE_SERIAL), ^{
+        [[APHLSCache instance] setup];
+        [[APHLSCache instance] cleanAllPendingTask];
+    });
+
     return YES;
 }
 

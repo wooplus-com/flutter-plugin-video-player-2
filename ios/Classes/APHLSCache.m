@@ -45,11 +45,6 @@
     
     if (self = [super init]) {
         
-        _queue = [NSOperationQueue new];
-        _queue.maxConcurrentOperationCount = 4;
-        
-        _sessionConfiguration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:kBackgroundIdentifier];
-        _downloadSeesion = [AVAssetDownloadURLSession sessionWithConfiguration:_sessionConfiguration assetDownloadDelegate:self delegateQueue:_queue];
         _taskMap = [NSMutableDictionary dictionary];
         
         _userDefaults = [[NSUserDefaults alloc] initWithSuiteName:kCacheFileName];
@@ -62,6 +57,16 @@
     }
     return self;
 }
+
+- (void)setup {
+    
+    _queue = [NSOperationQueue new];
+    _queue.maxConcurrentOperationCount = 4;
+    
+    _sessionConfiguration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:kBackgroundIdentifier];
+    _downloadSeesion = [AVAssetDownloadURLSession sessionWithConfiguration:_sessionConfiguration assetDownloadDelegate:self delegateQueue:_queue];
+}
+
 
 #pragma mark - Data
 
@@ -212,6 +217,10 @@
                                                                      assetTitle:path
                                                                assetArtworkData:nil
                                                                         options:nil];
+    
+    if (!task) {
+        return;
+    }
     
     [task resume];
     _taskMap[path] = task;

@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface APHLSCache : NSObject
 
 + (instancetype)instance;
+- (void)setup;
 
 - (void)cleanAllPendingTask;
 - (AVURLAsset*)checkIfHasOfflineAsset:(NSURL*)url;
