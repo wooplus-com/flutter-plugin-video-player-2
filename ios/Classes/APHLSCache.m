@@ -291,9 +291,13 @@
 - (void)URLSession:(NSURLSession *)session assetDownloadTask:(AVAssetDownloadTask *)assetDownloadTask didFinishDownloadingToURL:(NSURL *)location {
     
     NSString *path = assetDownloadTask.URLAsset.URL.absoluteString;
-    _taskMap[path] = nil;
-    NSLog(@"[APHLSCache] task %@ will download to loacation %@", assetDownloadTask.URLAsset.URL, location);
-    [self saveAssetURL:assetDownloadTask.URLAsset.URL localPath:location.relativePath];
+
+    if (path)
+    {
+        _taskMap[path] = nil;
+        NSLog(@"[APHLSCache] task %@ will download to loacation %@", assetDownloadTask.URLAsset.URL, location);
+        [self saveAssetURL:assetDownloadTask.URLAsset.URL localPath:location.relativePath];
+    }
 }
 
 // 错误
