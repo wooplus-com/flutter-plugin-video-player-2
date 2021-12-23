@@ -1,0 +1,4 @@
+example/build
+example/.dart_tool
+build
+example/ios/Runner.xcodeproj/project.xcworkspace/xcuserdata
