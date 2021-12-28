@@ -1,14 +1,16 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=/Users/wooplus/fvm/versions/1.22.6
-FLUTTER_APPLICATION_PATH=/Users/wooplus/Desktop/Code/app/client/lib/plugin/video_player-1.0.1/example
-FLUTTER_TARGET=lib/main.dart
+FLUTTER_ROOT=/Users/elvin/development/language/flutter
+FLUTTER_APPLICATION_PATH=/Users/elvin/development/project/temp/flutter-plugin-video-player/example
+COCOAPODS_PARALLEL_CODE_SIGN=true
+FLUTTER_TARGET=/Users/elvin/development/project/temp/flutter-plugin-video-player/example/lib/main.dart
 FLUTTER_BUILD_DIR=build
 SYMROOT=${SOURCE_ROOT}/../build/ios
-OTHER_LDFLAGS=$(inherited) -framework Flutter
-FLUTTER_FRAMEWORK_DIR=/Users/wooplus/fvm/versions/1.22.6/bin/cache/artifacts/engine/ios
 FLUTTER_BUILD_NAME=0.0.1
 FLUTTER_BUILD_NUMBER=0.0.1
+EXCLUDED_ARCHS[sdk=iphonesimulator*]=arm64 i386
+DART_DEFINES=RkxVVFRFUl9XRUJfQVVUT19ERVRFQ1Q9dHJ1ZQ==
 DART_OBFUSCATION=false
-TRACK_WIDGET_CREATION=false
+EXTRA_FRONT_END_OPTIONS=--no-sound-null-safety
+TRACK_WIDGET_CREATION=true
 TREE_SHAKE_ICONS=false
-PACKAGE_CONFIG=.packages
+PACKAGE_CONFIG=/Users/elvin/development/project/temp/flutter-plugin-video-player/example/.dart_tool/package_config.json

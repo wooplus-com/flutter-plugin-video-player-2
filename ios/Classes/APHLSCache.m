@@ -70,11 +70,18 @@
 
 #pragma mark - Data
 
+
+
+- (void)saveDownloadAssetsArray {
+    NSArray *copyArray = [self.downloadAssetsArray copy];
+    [_userDefaults setObject:copyArray forKey:kCacheKeyAssets];
+    [_userDefaults synchronize];
+}
+
 - (void)updateAssetURL:(NSURL*)url {
-    
     NSDictionary *target;
-    for (int i = 0; i < _downloadAssetsArray.count; i++) {
-        NSDictionary *dict = _downloadAssetsArray[i];
+    for (int i = 0; i < self.downloadAssetsArray.count; i++) {
+        NSDictionary *dict = self.downloadAssetsArray[i];
         // 找到要更新的资源
         if ([dict[kCacheAssetKeyURL] isEqualToString:url.absoluteString]) {
             target = dict;
@@ -84,37 +91,31 @@
     }
     
     if (target) {
-        
-        [_downloadAssetsArray removeObject:target];
-        [_downloadAssetsArray insertObject:target atIndex:0];
-        [_userDefaults setObject:_downloadAssetsArray forKey:kCacheKeyAssets];
-        [_userDefaults synchronize];
+        [self.downloadAssetsArray removeObject:target];
+        [self.downloadAssetsArray insertObject:target atIndex:0];
+        [self saveDownloadAssetsArray];
     }
 }
 
 // 保存资源路径映射
 - (void)saveAssetURL:(NSURL*)url localPath:(NSString*)localPath {
-    
     NSString *networkPath = url.absoluteString;
     NSDictionary *dict = @{
         kCacheAssetKeyURL: networkPath,
         kCacheAssetKeyLocalFile: localPath,
     };
-    [_downloadAssetsArray insertObject:dict atIndex:0];
+    [self.downloadAssetsArray insertObject:dict atIndex:0];
     
     NSLog(@"[APHLSCache] save %@", dict);
     
     // 超出缓存个数，就移除最后一个
-    if (_downloadAssetsArray.count > _maxCacheCount) {
-        
-        NSLog(@"[APHLSCache] remove last %@", _downloadAssetsArray.lastObject);
-        NSURL *lastLocalURL = [NSURL fileURLWithPath:_downloadAssetsArray.lastObject[kCacheAssetKeyLocalFile]];
+    if (self.downloadAssetsArray.count > _maxCacheCount) {
+        NSLog(@"[APHLSCache] remove last %@", self.downloadAssetsArray.lastObject);
+        NSURL *lastLocalURL = [NSURL fileURLWithPath:self.downloadAssetsArray.lastObject[kCacheAssetKeyLocalFile]];
         [self deleteAssetInDisk:lastLocalURL];
-        [_downloadAssetsArray removeLastObject];
+        [self.downloadAssetsArray removeLastObject];
     }
-    
-    [_userDefaults setObject:_downloadAssetsArray forKey:kCacheKeyAssets];
-    [_userDefaults synchronize];
+    [self saveDownloadAssetsArray];
 }
 
 // 移除资源路径映射
@@ -123,14 +124,13 @@
     NSLog(@"[APHLSCache] want to remove %@", url);
     
     NSString *path = url.absoluteString;
-    for (int i = 0; i < _downloadAssetsArray.count; i++) {
-        NSDictionary *dict = _downloadAssetsArray[i];
+    for (int i = 0; i < self.downloadAssetsArray.count; i++) {
+        NSDictionary *dict = self.downloadAssetsArray[i];
         // 找到要删除的资源
         if ([dict[kCacheAssetKeyURL] isEqualToString:path]) {
             NSLog(@"[APHLSCache] remove %@", dict);
-            [_downloadAssetsArray removeObjectAtIndex:i];
-            [_userDefaults setObject:_downloadAssetsArray forKey:kCacheKeyAssets];
-            [_userDefaults synchronize];
+            [self.downloadAssetsArray removeObjectAtIndex:i];
+            [self saveDownloadAssetsArray];
             break;
         }
     }
@@ -159,7 +159,7 @@
 - (NSString*)findLocalAssetPathWithURL:(NSURL*)url {
     
     NSString *urlPath = url.absoluteString;
-    for (NSDictionary *dict in _downloadAssetsArray) {
+    for (NSDictionary *dict in self.downloadAssetsArray) {
         if ([dict[kCacheAssetKeyURL] isEqualToString:urlPath]) {
             return dict[kCacheAssetKeyLocalFile];
         }
@@ -200,10 +200,9 @@
 }
 
 - (AVAssetDownloadTask*)downloadWithURL:(NSURL*)url {
-    
     NSString *path = url.absoluteString;
-    if (_taskMap[path]) {
-        return _taskMap[path];
+    if (self.taskMap[path]) {
+        return self.taskMap[path];
     }
     
     AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:url options:nil];
@@ -223,7 +222,7 @@
     }
     
     [task resume];
-    _taskMap[path] = task;
+    self.taskMap[path] = task;
     
     NSLog(@"[APHLSCache] create %@ task", path);
     return task;
@@ -232,9 +231,9 @@
 - (void)cancelDownloadWithURL:(NSURL*)url {
     
     NSString *path = url.absoluteString;
-    AVAssetDownloadTask *task = _taskMap[path];
+    AVAssetDownloadTask *task = self.taskMap[path];
     [task cancel];
-    _taskMap[path] = nil;
+    self.taskMap[path] = nil;
     
     NSLog(@"[APHLSCache] cancel %@ task", path);
 }
@@ -294,8 +293,9 @@
 
     if (path)
     {
-        _taskMap[path] = nil;
+        self.taskMap[path] = nil;
         NSLog(@"[APHLSCache] task %@ will download to loacation %@", assetDownloadTask.URLAsset.URL, location);
+        
         [self saveAssetURL:assetDownloadTask.URLAsset.URL localPath:location.relativePath];
     }
 }
@@ -314,7 +314,7 @@
             NSLog(@"[APHLSCache] task %@ success", path);
         }
         if (path) {
-            _taskMap[path] = nil;
+            self.taskMap[path] = nil;
         }
     }
 }

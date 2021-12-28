@@ -212,7 +212,7 @@ class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
   void initState() {
     super.initState();
     _controller = VideoPlayerController.network(
-      'https://video-stage2.apiteamn.com/320scale/index_video.m3u8',
+      'https://video-stage2.apiteamn.com/2021/05/10/60990090441a13ae0ab4409d/index_video.m3u8',
       //'https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_4x3/bipbop_4x3_variant.m3u8',
       videoPlayerOptions: VideoPlayerOptions(mixWithOthers: false),
     );
