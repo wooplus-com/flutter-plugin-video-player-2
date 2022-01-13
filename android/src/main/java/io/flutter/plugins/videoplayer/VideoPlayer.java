@@ -6,10 +6,12 @@ package io.flutter.plugins.videoplayer;
 
 import static com.google.android.exoplayer2.Player.REPEAT_MODE_ALL;
 import static com.google.android.exoplayer2.Player.REPEAT_MODE_OFF;
+import static com.google.android.exoplayer2.upstream.DefaultBandwidthMeter.DEFAULT_SLIDING_WINDOW_MAX_WEIGHT;
 
 import android.content.Context;
 import android.net.Uri;
 import android.view.Surface;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.Format;
@@ -29,18 +31,28 @@ import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.Util;
+
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.view.TextureRegistry;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import com.google.android.exoplayer2.upstream.cache.CacheDataSink;
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor;
 import com.google.android.exoplayer2.upstream.cache.SimpleCache;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+
+import java.io.File;
+
+import com.google.android.exoplayer2.upstream.FileDataSource;
+import com.google.common.collect.ImmutableMap;
 
 final class VideoPlayer {
   private static final String FORMAT_SS = "ss";
@@ -62,8 +74,8 @@ final class VideoPlayer {
 
   private final VideoPlayerOptions options;
 
-  long maxCacheSize=200 * 1024 * 1024;
-  long maxCacheFileSize=100 * 1024 * 1024;
+  long maxCacheSize = 200 * 1024 * 1024;
+  long maxCacheFileSize = 100 * 1024 * 1024;
 
   VideoPlayer(
           Context context,
@@ -155,8 +167,7 @@ final class VideoPlayer {
       case C.TYPE_OTHER:
         return new ProgressiveMediaSource.Factory(mediaDataSourceFactory)
                 .createMediaSource(MediaItem.fromUri(uri));
-      default:
-      {
+      default: {
         throw new IllegalStateException("Unsupported type: " + type);
       }
     }
@@ -310,41 +321,46 @@ final class VideoPlayer {
       exoPlayer.release();
     }
   }
-}
-static class CacheDataSourceFactory implements DataSource.Factory {
-  private final Context context;
-  private final DefaultDataSourceFactory defaultDatasourceFactory;
-  private final long maxFileSize, maxCacheSize;
-  private static SimpleCache downloadCache;
 
-  CacheDataSourceFactory(
-          Context context,
-          long maxCacheSize,
-          long maxFileSize,
-          DataSource.Factory upstreamDataSource) {
-    super();
-    this.context = context;
-    this.maxCacheSize = maxCacheSize;
-    this.maxFileSize = maxFileSize;
-    DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-    defaultDatasourceFactory =
-            new DefaultDataSourceFactory(this.context, bandwidthMeter, upstreamDataSource);
-  }
+  static class CacheDataSourceFactory implements DataSource.Factory {
+    private final Context context;
+    private final DefaultDataSourceFactory defaultDatasourceFactory;
+    private final long maxFileSize, maxCacheSize;
+    private static SimpleCache downloadCache;
 
-  @Override
-  public DataSource createDataSource() {
-    LeastRecentlyUsedCacheEvictor evictor = new LeastRecentlyUsedCacheEvictor(maxCacheSize);
-
-    if (downloadCache == null) {
-      downloadCache = new SimpleCache(new File(context.getCacheDir(), "video"), evictor);
+    CacheDataSourceFactory(
+            Context context,
+            long maxCacheSize,
+            long maxFileSize,
+            DataSource.Factory upstreamDataSource) {
+      super();
+      this.context = context;
+      this.maxCacheSize = maxCacheSize;
+      this.maxFileSize = maxFileSize;
+      DefaultBandwidthMeter bandwidthMeter = DefaultBandwidthMeter.getSingletonInstance(
+              context
+      );
+      defaultDatasourceFactory =
+              new DefaultDataSourceFactory(this.context, bandwidthMeter, upstreamDataSource);
     }
 
-    return new CacheDataSource(
-            downloadCache,
-            defaultDatasourceFactory.createDataSource(),
-            new FileDataSource(),
-            new CacheDataSink(downloadCache, maxFileSize),
-            CacheDataSource.FLAG_BLOCK_ON_CACHE | CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR,
-            null);
+    @Override
+    public DataSource createDataSource() {
+      LeastRecentlyUsedCacheEvictor evictor = new LeastRecentlyUsedCacheEvictor(maxCacheSize);
+
+      if (downloadCache == null) {
+
+        downloadCache = new SimpleCache(new File(context.getCacheDir(), "video"), evictor, null, null, false
+                , true);
+      }
+
+      return new CacheDataSource(
+              downloadCache,
+              defaultDatasourceFactory.createDataSource(),
+              new FileDataSource(),
+              new CacheDataSink(downloadCache, maxFileSize),
+              CacheDataSource.FLAG_BLOCK_ON_CACHE | CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR,
+              null);
+    }
   }
 }
