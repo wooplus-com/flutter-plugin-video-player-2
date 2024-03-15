@@ -1,4 +1,4 @@
-//
+// old
 //  APHLSCache.m
 //  video_player
 //
@@ -140,7 +140,8 @@
 - (BOOL)deleteAssetInDisk:(NSURL*)url {
     
     @try {
-        
+        NSURL *baseURL = [NSURL fileURLWithPath:NSHomeDirectory()];
+        url = [baseURL URLByAppendingPathComponent:url.path];
         NSError *error;
         [NSFileManager.defaultManager removeItemAtURL:url error:&error];
         if (error) {
