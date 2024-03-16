@@ -49,13 +49,16 @@
         
         _userDefaults = [[NSUserDefaults alloc] initWithSuiteName:kCacheFileName];
         _maxCacheCount = 10;
-        
         _downloadAssetsArray = [[_userDefaults objectForKey:kCacheKeyAssets] mutableCopy];
         if (!_downloadAssetsArray) {
             _downloadAssetsArray = [NSMutableArray array];
         }
     }
     return self;
+}
+
+- (void)setMaxCacheCount:(NSUInteger)count {
+    _maxCacheCount = count;
 }
 
 - (void)setup {
