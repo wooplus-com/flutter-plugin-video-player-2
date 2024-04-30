@@ -15,8 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)instance;
 - (void)setup;
 
-- (void)setMaxCacheCount:(NSUInteger)count;
-
 - (void)cleanAllPendingTask;
 - (AVURLAsset*)checkIfHasOfflineAsset:(NSURL*)url;
 - (AVAssetDownloadTask*)downloadWithURL:(NSURL*)url;
